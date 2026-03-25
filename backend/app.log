@@ -1,0 +1,3 @@
+2026-03-25 03:12:10.966 | INFO     | __main__:create_app:287 - Running initial news processing...
+2026-03-25 03:12:10.967 | INFO     | rag.utils:process_news_pipeline:33 - Loading news data from datasets/Aggregated News Dataset - Sheet1.csv
+2026-03-25 03:12:10.968 | ERROR    | __main__:create_app:295 - Failed to initialize: [Errno 2] No such file or directory: 'datasets/Aggregated News Dataset - Sheet1.csv'
