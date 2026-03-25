@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, X, Send, Volume2, VolumeX, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { supabase } from "@/integrations/supabase/client";
+import { assistantChat, getCurrentUser } from "@/lib/api";
 
 type Message = {
   id: string;
@@ -14,6 +14,7 @@ type Message = {
 const SQUIRREL_AVATAR = "🐿️";
 
 const SquirrelChatbot = () => {
+  const user = getCurrentUser();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -58,14 +59,7 @@ const SquirrelChatbot = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("squirrel-chat", {
-        body: {
-          messages: allMessages.map((m) => ({ role: m.role, content: m.content })),
-        },
-      });
-
-      if (error) throw error;
-
+      const data = await assistantChat(user?.id, allMessages.map((m) => ({ role: m.role, content: m.content })));
       const reply = data?.reply || "Sorry, I couldn't process that. Try again!";
       setMessages((prev) => [
         ...prev,

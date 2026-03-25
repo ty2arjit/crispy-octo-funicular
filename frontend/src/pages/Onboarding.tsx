@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, User, Briefcase, GraduationCap, Code, Zap } from "lucide-react";
+import { registerUser, saveCurrentUser } from "@/lib/api";
 
 const roles = [
   { id: "student", label: "Student", icon: GraduationCap, desc: "Preparing for exams or staying informed" },
@@ -29,6 +30,9 @@ const Onboarding = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests((prev) =>
@@ -37,12 +41,27 @@ const Onboarding = () => {
   };
 
   const canProceed =
-    (step === 0 && selectedRole) ||
+    (step === 0 && selectedRole && name.trim().length >= 2 && /@/.test(email)) ||
     (step === 1 && selectedInterests.length >= 2) ||
     (step === 2 && selectedStyle);
 
-  const handleFinish = () => {
-    navigate("/feed");
+  const handleFinish = async () => {
+    setLoading(true);
+    try {
+      const user = await registerUser({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        role: selectedRole as "student" | "investor" | "developer" | "founder",
+        interests: selectedInterests,
+        readingStyle: selectedStyle
+      });
+      saveCurrentUser(user);
+      navigate("/feed");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Unable to create your profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -79,6 +98,21 @@ const Onboarding = () => {
             >
               <h2 className="font-serif text-2xl font-bold">What best describes you?</h2>
               <p className="text-sm text-muted-foreground mt-2">This helps us tailor your briefings.</p>
+              <div className="grid gap-3 mt-6">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  type="email"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3 mt-8">
                 {roles.map((role) => (
                   <button
@@ -168,10 +202,10 @@ const Onboarding = () => {
           </Button>
           <Button
             variant="hero"
-            disabled={!canProceed}
+            disabled={!canProceed || loading}
             onClick={() => (step < 2 ? setStep((s) => s + 1) : handleFinish())}
           >
-            {step < 2 ? "Next" : "Launch My Feed"}
+            {step < 2 ? "Next" : loading ? "Launching..." : "Launch My Feed"}
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </div>

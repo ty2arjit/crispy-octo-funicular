@@ -1,96 +1,93 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Zap, Brain, CheckCircle2, XCircle, ArrowRight, RotateCcw,
+  Brain, CheckCircle2, XCircle, ArrowRight, RotateCcw,
   Moon, Sun, ChevronLeft,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import SquirrelChatbot from "@/components/SquirrelChatbot";
+import { generateQuiz, getBriefing, getCurrentUser, mapReadingMode, submitQuiz } from "@/lib/api";
 
 type Question = {
   id: string;
   question: string;
   options: string[];
   correct: number;
-  explanation: string;
+  explanation?: string;
   topic: string;
   difficulty: "Easy" | "Medium" | "Hard";
 };
 
-const sampleQuestions: Question[] = [
-  {
-    id: "1",
-    question: "What is the current repo rate maintained by the RBI?",
-    options: ["5.5%", "6.0%", "6.5%", "7.0%"],
-    correct: 2,
-    explanation: "The RBI has maintained the repo rate at 6.5% for eight consecutive policy meetings, balancing inflation management with growth support.",
-    topic: "Economy",
-    difficulty: "Easy",
-  },
-  {
-    id: "2",
-    question: "How much funding has the government approved for new semiconductor fabrication units?",
-    options: ["₹50,000 Crore", "₹76,000 Crore", "₹1,00,000 Crore", "₹25,000 Crore"],
-    correct: 1,
-    explanation: "The government approved ₹76,000 Crore for three new semiconductor fabrication units across Gujarat and Assam.",
-    topic: "Technology",
-    difficulty: "Medium",
-  },
-  {
-    id: "3",
-    question: "Which of the following companies did NOT file for IPO recently?",
-    options: ["Zepto", "PhysicsWallah", "Ather Energy", "Swiggy"],
-    correct: 3,
-    explanation: "Zepto, PhysicsWallah, and Ather Energy filed draft papers with SEBI. Swiggy had already completed its IPO earlier.",
-    topic: "Startups",
-    difficulty: "Easy",
-  },
-  {
-    id: "4",
-    question: "What was the impact of US-China trade tensions on the Nifty index?",
-    options: ["Rose 2%", "Fell 1.2%", "Remained unchanged", "Fell 3.5%"],
-    correct: 1,
-    explanation: "The Nifty shed 1.2% in early trade due to new tariff threats but recovered on domestic institutional buying.",
-    topic: "Global Affairs",
-    difficulty: "Medium",
-  },
-  {
-    id: "5",
-    question: "Which regulatory body reviews IPO draft papers in India?",
-    options: ["RBI", "SEBI", "IRDAI", "NABARD"],
-    correct: 1,
-    explanation: "The Securities and Exchange Board of India (SEBI) reviews all IPO draft red herring prospectus filings.",
-    topic: "Polity",
-    difficulty: "Easy",
-  },
-  {
-    id: "6",
-    question: "Where are the new semiconductor fabrication units planned?",
-    options: ["Karnataka and Tamil Nadu", "Gujarat and Assam", "Maharashtra and Telangana", "Delhi and UP"],
-    correct: 1,
-    explanation: "The three new semiconductor fabrication units are planned across Gujarat and Assam as part of India's chip self-reliance push.",
-    topic: "Technology",
-    difficulty: "Hard",
-  },
-];
+const sampleQuestions: Question[] = [];
 
 const Quiz = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const topic = searchParams.get("topic") || "economy";
+  const user = getCurrentUser();
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
   const [answeredCount, setAnsweredCount] = useState(0);
+  const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>(sampleQuestions);
+  const [quizId, setQuizId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [finalHint, setFinalHint] = useState("");
   const { theme, toggleTheme } = useTheme();
 
-  const question = sampleQuestions[currentQ];
+  const question = questions[currentQ];
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      if (!user) {
+        navigate("/onboarding");
+        return;
+      }
+
+      setLoading(true);
+      setError("");
+      try {
+        await getBriefing(user.id, topic, mapReadingMode(user.readingStyle));
+        const difficulty = user.isPro ? "upsc-advanced" : "basic";
+        const quiz = await generateQuiz(user.id, topic, difficulty);
+
+        const normalized: Question[] = quiz.questions.map((q) => ({
+          id: q.id,
+          question: q.question,
+          options: q.options,
+          correct: q.answerIndex,
+          explanation: q.explanation,
+          topic,
+          difficulty: difficulty.includes("advanced") ? "Hard" : "Medium"
+        }));
+
+        setQuestions(normalized);
+        setQuizId(quiz.id);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Unable to generate quiz");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void bootstrap();
+  }, [navigate, topic, user]);
 
   const handleAnswer = (index: number) => {
     if (selectedAnswer !== null) return;
     setSelectedAnswer(index);
+    setUserAnswers((prev) => {
+      const next = [...prev];
+      next[currentQ] = index;
+      return next;
+    });
     setShowExplanation(true);
     setAnsweredCount((c) => c + 1);
     if (index === question.correct) {
@@ -99,11 +96,16 @@ const Quiz = () => {
   };
 
   const handleNext = () => {
-    if (currentQ < sampleQuestions.length - 1) {
+    if (currentQ < questions.length - 1) {
       setCurrentQ((c) => c + 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
     } else {
+      if (user && quizId) {
+        void submitQuiz(user.id, quizId, userAnswers)
+          .then((result) => setFinalHint(result.spacedRepetitionHint))
+          .catch(() => setFinalHint("Keep revising this topic tomorrow for better retention."));
+      }
       setFinished(true);
     }
   };
@@ -114,7 +116,9 @@ const Quiz = () => {
     setShowExplanation(false);
     setScore(0);
     setAnsweredCount(0);
+    setUserAnswers([]);
     setFinished(false);
+    setFinalHint("");
   };
 
   return (
@@ -145,7 +149,9 @@ const Quiz = () => {
       </header>
 
       <main className="pt-24 pb-16 container max-w-2xl">
-        {!finished ? (
+        {loading && <p className="text-sm text-muted-foreground">Generating quiz...</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {!loading && !finished && question ? (
           <motion.div
             key={currentQ}
             initial={{ opacity: 0, x: 20 }}
@@ -155,10 +161,10 @@ const Quiz = () => {
             {/* Progress */}
             <div className="flex items-center justify-between mb-6">
               <span className="text-xs text-muted-foreground">
-                Question {currentQ + 1} of {sampleQuestions.length}
+                Question {currentQ + 1} of {questions.length}
               </span>
               <div className="flex gap-1">
-                {sampleQuestions.map((_, i) => (
+                {questions.map((_, i) => (
                   <div
                     key={i}
                     className={`w-8 h-1 rounded-full ${
@@ -245,16 +251,16 @@ const Quiz = () => {
               >
                 <p className="text-xs font-semibold text-primary mb-1">Explanation</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {question.explanation}
+                  {question.explanation || "Review the key takeaway for this question and revise the associated concept."}
                 </p>
                 <Button variant="hero" size="sm" className="mt-4" onClick={handleNext}>
-                  {currentQ < sampleQuestions.length - 1 ? "Next Question" : "See Results"}
+                  {currentQ < questions.length - 1 ? "Next Question" : "See Results"}
                   <ArrowRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
               </motion.div>
             )}
           </motion.div>
-        ) : (
+        ) : finished ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -265,15 +271,16 @@ const Quiz = () => {
             </div>
             <h2 className="font-serif text-3xl font-bold">Quiz Complete!</h2>
             <p className="mt-3 text-muted-foreground">
-              You scored <span className="font-bold text-foreground">{score}</span> out of <span className="font-bold text-foreground">{sampleQuestions.length}</span>
+              You scored <span className="font-bold text-foreground">{score}</span> out of <span className="font-bold text-foreground">{questions.length}</span>
             </p>
             <div className="mt-2 text-sm text-muted-foreground">
-              {score === sampleQuestions.length
+              {score === questions.length
                 ? "🎉 Perfect score! You're on fire!"
-                : score >= sampleQuestions.length * 0.7
+                : score >= questions.length * 0.7
                 ? "💪 Great job! Keep it up."
                 : "📚 Keep reading — you'll get there!"}
             </div>
+            {finalHint && <p className="mt-3 text-sm text-primary">{finalHint}</p>}
             <div className="mt-8 flex gap-3 justify-center">
               <Button variant="hero-outline" onClick={handleRestart}>
                 <RotateCcw className="w-4 h-4 mr-1" />
@@ -284,7 +291,7 @@ const Quiz = () => {
               </Button>
             </div>
           </motion.div>
-        )}
+        ) : null}
       </main>
 
       <SquirrelChatbot />
