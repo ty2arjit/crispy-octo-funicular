@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 import { MessageCircle, X, Send, Volume2, VolumeX, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { assistantChat, getCurrentUser } from "@/lib/api";
+import { assistantChat, getCurrentUser } from "../lib/api";
 
 type Message = {
   id: string;

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import { ArrowRight, BookOpen, Brain, Headphones } from "lucide-react";
 
 const Hero = () => {
@@ -50,13 +50,15 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Button variant="hero" size="lg" asChild>
+            {/* Again variant hero is not defined i am convertimg it to defualt make it hero once you define it  */}
+            <Button variant="default" size="lg" asChild>
               <Link to="/onboarding">
                 Start Reading Smarter
                 <ArrowRight className="ml-1 w-4 h-4" />
               </Link>
             </Button>
-            <Button variant="hero-outline" size="lg" asChild>
+            {/* Yaha pe variant hero-outline hai abhi ke liye default kar raha baad mein jab define kar dena tab hero-outline kar dena  */}
+            <Button variant="default" size="lg" asChild>
               <a href="#how-it-works">See How It Works</a>
             </Button>
           </motion.div>

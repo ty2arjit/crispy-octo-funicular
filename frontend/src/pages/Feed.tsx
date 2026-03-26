@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
 import {
   Zap,
   Clock,
@@ -15,8 +15,8 @@ import {
   Play,
   Pause
 } from "lucide-react";
-import { useTheme } from "@/hooks/useTheme";
-import SquirrelChatbot from "@/components/SquirrelChatbot";
+import { useTheme } from "../hooks/useTheme";
+import SquirrelChatbot from "../components/SquirrelChatbot";
 import {
   getCurrentUser,
   getDailyTopics,
@@ -24,7 +24,7 @@ import {
   logFeedInteraction,
   mapReadingMode,
   synthesizeNarration
-} from "@/lib/api";
+} from "../lib/api";
 
 const modeOptions = [
   { label: "Short", value: "short" },

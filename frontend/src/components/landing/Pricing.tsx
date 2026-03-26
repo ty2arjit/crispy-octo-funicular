@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 
@@ -85,7 +85,9 @@ const Pricing = () => {
                 ))}
               </ul>
               <Button
-                variant={plan.featured ? "hero" : "hero-outline"}
+              // Abhi ke liye variant ko default kar de raha jab hero ya hero-outline define kar dena tab defult hata ke neeche wala part use kar lena 
+                // variant={plan.featured ? "hero" : "hero-outline"}
+                variant="default"
                 className="w-full mt-8"
                 asChild
               >

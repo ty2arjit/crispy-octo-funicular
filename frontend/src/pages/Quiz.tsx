@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "../components/ui/button"; 
+import { Badge } from "../components/ui/badge";
 import {
   Brain, CheckCircle2, XCircle, ArrowRight, RotateCcw,
   Moon, Sun, ChevronLeft,
 } from "lucide-react";
-import { useTheme } from "@/hooks/useTheme";
-import SquirrelChatbot from "@/components/SquirrelChatbot";
-import { generateQuiz, getBriefing, getCurrentUser, mapReadingMode, submitQuiz } from "@/lib/api";
+import { useTheme } from "../hooks/useTheme"; 
+import SquirrelChatbot from "../components/SquirrelChatbot";
+import { generateQuiz, getBriefing, getCurrentUser, mapReadingMode, submitQuiz } from "../lib/api";
 
 type Question = {
   id: string;
@@ -253,7 +253,8 @@ const Quiz = () => {
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {question.explanation || "Review the key takeaway for this question and revise the associated concept."}
                 </p>
-                <Button variant="hero" size="sm" className="mt-4" onClick={handleNext}>
+                {/* Again the variant hero is not defined so i am converting to defualt agar baad mein define karna hero to yaha defualt ko hero se replace kar dena  */}
+                <Button variant="default" size="sm" className="mt-4" onClick={handleNext}>
                   {currentQ < questions.length - 1 ? "Next Question" : "See Results"}
                   <ArrowRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
@@ -282,11 +283,21 @@ const Quiz = () => {
             </div>
             {finalHint && <p className="mt-3 text-sm text-primary">{finalHint}</p>}
             <div className="mt-8 flex gap-3 justify-center">
+              {/* Again the hero-outline in variant is not defined, abhi ke liye defualt kar de raha baad mein jab define karna hero-outline tab replace kar dena 
               <Button variant="hero-outline" onClick={handleRestart}>
                 <RotateCcw className="w-4 h-4 mr-1" />
                 Try Again
+              </Button> 
+              ye neeche wale mein change kar dena ref ke liye ye comment out karke rakh diya hu
+              */
+              
+              }
+              <Button variant="default" onClick={handleRestart}>
+                <RotateCcw className="w-4 h-4 mr-1" />
+                Try Again
               </Button>
-              <Button variant="hero" asChild>
+              {/* Same neeche wale mein variant hero hai abhi ke liye main use default kar de rhaa */}
+              <Button variant="default" asChild>
                 <Link to="/feed">Back to Feed</Link>
               </Button>
             </div>

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import { Menu, X, Zap, Moon, Sun } from "lucide-react";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "../../hooks/useTheme";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -36,7 +36,8 @@ const Navbar = () => {
           <Button variant="ghost" size="sm" asChild>
             <Link to="/login">Log in</Link>
           </Button>
-          <Button variant="hero" size="sm" asChild>
+          {/* Changed the variant to default because hero is not a valid variant design */}
+          <Button variant="default" size="sm" asChild>
             <Link to="/onboarding">Get Started</Link>
           </Button>
         </div>
@@ -61,7 +62,8 @@ const Navbar = () => {
             <Button variant="ghost" size="sm" className="flex-1" asChild>
               <Link to="/login">Log in</Link>
             </Button>
-            <Button variant="hero" size="sm" className="flex-1" asChild>
+            {/* Changed the variant to default because hero is not a valid variant design */}
+            <Button variant="default" size="sm" className="flex-1" asChild>
               <Link to="/onboarding">Get Started</Link>
             </Button>
           </div>

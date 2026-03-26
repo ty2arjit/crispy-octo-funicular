@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { BookOpen, RotateCcw, Target, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import { Link } from "react-router-dom";
 
 const UPSCSection = () => {
@@ -21,7 +21,8 @@ const UPSCSection = () => {
             <p className="mt-4 text-muted-foreground leading-relaxed">
               Every news article becomes a potential UPSC question. Our AI maps headlines to syllabus topics — economy, polity, geography, and more — so you never miss what matters for your exam.
             </p>
-            <Button variant="hero" size="lg" className="mt-8" asChild>
+            {/* Again variant hero hai main usjko default kar de raha */}
+            <Button variant="default" size="lg" className="mt-8" asChild>
               <Link to="/onboarding">Start UPSC Prep</Link>
             </Button>
           </motion.div>

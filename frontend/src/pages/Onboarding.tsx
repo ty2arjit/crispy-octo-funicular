@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { ArrowRight, ArrowLeft, User, Briefcase, GraduationCap, Code, Zap } from "lucide-react";
-import { registerUser, saveCurrentUser } from "@/lib/api";
+import { registerUser, saveCurrentUser } from "../lib/api";
 
 const roles = [
   { id: "student", label: "Student", icon: GraduationCap, desc: "Preparing for exams or staying informed" },
@@ -200,8 +200,9 @@ const Onboarding = () => {
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back
           </Button>
+          {/* Again the variant is hero abhi ke liye i am converting it to default and jab define kar dena tab default ko hero se replace kar dena  */}
           <Button
-            variant="hero"
+            variant="default"
             disabled={!canProceed || loading}
             onClick={() => (step < 2 ? setStep((s) => s + 1) : handleFinish())}
           >
